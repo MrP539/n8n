@@ -12,36 +12,635 @@
 </head>
 <body>
     <n8n-demo workflow='{
-        "nodes": [
-            {
-                "name": "Start",
-                "type": "n8n-nodes-base.start",
-                "position": [300, 200]
-            },
-            {
-                "name": "Webhook",
-                "type": "n8n-nodes-base.webhook",
-                "position": [500, 200],
-                "parameters": {
-                    "path": "webhook",
-                    "httpMethod": "POST"
-                },
-                "typeVersion": 1
-            }
-        ],
-        "connections": {
-            "Start": {
-                "main": [
-                    [
-                        {
-                            "node": "Webhook",
-                            "type": "main",
-                            "index": 0
-                        }
-                    ]
-                ]
-            }
+  "nodes": [
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7tMqf254LYefoBEc",
+          "mode": "list",
+          "cachedResultName": "test query booking"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "ignoreTypeMismatchErrors": false,
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
         }
-    }'></n8n-demo>
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2440,
+        80
+      ],
+      "id": "01e7fa42-baec-46cc-a2cc-f815bb54e50e",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1640,
+        40
+      ],
+      "id": "c15f0d95-556f-4103-88ab-eac13b7568af",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "d950cd55-3064-4035-940a-bbe8c683cdab",
+      "name": "Aggregate2",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"result\":[\"{{ $json.data[0].candidates[0].content.parts[0].text.trim() }}\",\"{{ $json.data[1].candidates[0].content.parts[0].text.trim() }}\",\"{{ $json.data[2].candidates[0].content.parts[0].text.trim() }}\",\"{{ $json.data[3].candidates[0].content.parts[0].text.trim() }}\",\"{{ $json.data[4].candidates[0].content.parts[0].text.trim() }}\"]}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1960,
+        80
+      ],
+      "id": "d7a94f3a-df5e-41f5-a0aa-c6376597fd4b",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "\nreturn {\"result\":list(set(_input.all()[0].json[\"result\"]))}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2100,
+        80
+      ],
+      "id": "33706142-d5c0-43a5-8685-02df759320f8",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyCIsx06N1DPeMh4wwkLFceNbgjUpkmywIc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"นำ {{ $json.result }} ไปประกอบการวิเคราะห์ป้ายทะเบียนของรถในวิดีโอ จากนั้นประเมิน ว่าข้อมูลใดมีความน่าจะเป็นและถูกต้องที่สุด (ให้ความสำคัญกับข้อมูลที่ให้ไปก่อนเป็นอันดับแรก)\"\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $('Aggregate').item.json.data[0].mime_type }}\",\n            \"file_uri\": \"{{ $('Aggregate').item.json.data[0].uri }}\"\n          }\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $('Aggregate').item.json.data[1].mime_type}}\",\n            \"file_uri\": \"{{ $('Aggregate').item.json.data[1].uri }}\"\n          }\n        }\n      ]\n    }\n  ],\n\"generationConfig\": {\n    \"temperature\": 0.2,\n    \"topK\": 10,\n    \"topP\": 0.8,\n    \"maxOutputTokens\": 500,\n    \"responseMimeType\": \"text/plain\"\n},\n    \"system_instruction\": {\n        \"parts\": {\"text\":\"Setting:\\n- Task type: License Plate Recognition\\n- Priority: Prioritize maximum accuracy for Thai character recognition over speed.\\n\\nCommand:\\n- First, Read all frames in the video and focus only on the closest car in the video.\\n- Second, focus on the License Plate of the focused car.\\n- Third, Improve the quality of the focused license plate before reading, such as adjusting contrast, reducing noise, or adjusting brightness, and apply any relevant image processing techniques for clearer text.\\n- Fourth, read the focused license plate carefully and use OCR techniques that can handle skewness, distortion, *and specifically Thai characters with overlapping or similar shapes, especially [ย, ฉ, ธ, บ, ษ]*. Apply character segmentation methods if necessary. **Pay very close attention to the nuances of Thai characters, particularly the loop and tail structures which distinguish ย from ฉ. Employ a secondary character verification algorithm focused on the subtle differences between these commonly confused glyphs.**\\n- Fifth, Optimize the inspection even in conditions of angles or uneven lighting *by attempting to rectify perspective and compensate for shadows and glare for a clearer view*. Prioritize accuracy over speed in inspection.\\n- *Sixth, Before providing final result, apply a cross validation method by re-analyzing the results with enhanced algorithm. If any doubt arise, please re-analyze the text again. **Include a dedicated analysis step specifically comparing characters that are likely to be confused (e.g., ย/ฉ, ธ/บ, ย/ษ, ย/บ ,ผ/พ ,ข/บ) using a comparative feature mapping algorithm to maximize accurate recognition.** *\\n- Finally: Respond according to the Output topic specification according to the Example output topic format only .\\n\\nRequirements:\\n- All frames in the video must be read and analyzed one by one.\\n- The angle and lighting of the image may not be symmetrical, the system should try to improve the reading and inspection through image processing.\\n- Analyze carefully if you encounter the following letters in particular [ย, ฉ, ธ], and double check if possible with character recognition engine for Thai. **Implement a probabilistic character scoring system that favors characters with the most similar features and highest confidence scores after applying all corrective measures.**\\n- Make sure to be as accurate as possible, **even if it means taking extra time on difficult plates. Focus the character recognition engine with a specialized model for Thai text which is capable of handling the nuanced shapes.**\\n- All information must be carefully verified and compiled for further evaluation by the vehicle owner or experts. *The goal is to provide a high-accuracy result for vehicle identification.*\\n\\nSupporting Information for Analysis:\\n\\n1. **ส่วนหัวของตัวอักษร:** ส่วนหัวของ \\\"ร\\\" เป็นเส้นโค้งเปิดด้านล่าง ซึ่งไม่มีลูปปิดเหมือนกับตัวอักษร \\\"ธ\\\" การตรวจสอบนี้เป็นขั้นตอนแรกที่สำคัญในการแยกแยะความแตกต่างระหว่าง \\\"ร\\\" และ \\\"ธ\\\"\\n\\n2. **เส้นแนวนอนที่ฐาน:** อักษร \\\"ร\\\" ไม่มีเส้นแนวนอนที่ฐาน ในขณะที่อักษร \\\"ธ\\\" จะมีเส้นแนวนอนที่ฐานอย่างชัดเจน การไม่มีเส้นแนวนอนที่ฐานนี้เป็นอีกหนึ่งปัจจัยสำคัญที่ทำให้มั่นใจว่าอักษรนี้คือ \\\"ร\\\"\\n\\n3. **ลักษณะเชิงโครงสร้าง:** ตัวอักษร \\\"ร\\\" มีลักษณะที่บางและเล็กกว่าเมื่อเทียบกับ \\\"ธ\\\" การเปรียบเทียบขนาดและความหนาของตัวอักษรนี้ช่วยในการยืนยันความถูกต้องของการระบุตัวอักษร\\n\\n4. **การใช้เทคนิค OCR เฉพาะสำหรับภาษาไทย:** โมเดล OCR ที่ใช้ได้รับการฝึกฝนมาสำหรับภาษาไทยโดยเฉพาะ ทำให้สามารถจดจำและแยกแยะลักษณะเฉพาะของ \\\"ร\\\" ได้อย่างแม่นยำมากขึ้น\\n\\n5. **การตรวจสอบซ้ำด้วยอัลกอริทึมพิเศษ:** หลังจากที่ OCR ทำการอ่านครั้งแรก ระบบได้ทำการตรวจสอบซ้ำโดยใช้อัลกอริทึม feature mapping เพื่อเปรียบเทียบคุณลักษณะของตัวอักษรที่อ่านได้กับต้นแบบของ \\\"ร\\\" และ \\\"ธ\\\" อีกครั้ง เพื่อให้มั่นใจว่าการระบุตัวอักษรนั้นถูกต้องและมีความแม่นยำสูงสุด\\n\\n\\nOutput:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : Show the problem\\n- if License plate is can read and confident output of License Plate Recognition is high : Show result in this format \\\"<result>\\\"[if result is have \\\" \\\" : replace  \\\" \\\" to \\\"\\\"] is in Thai language \\n\\nExample output:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : ไม่สามารถอ่านป้ายทะเบียนได้เนื่องจากอักษรและตัวเลขของป้ายทะเบียนนั้นหายไป\\n- if License plate is can read and confident output of License Plate Recognition is high : ผจ1234\\n\\n[!!! Respond according to the Output topic specification according to the Example output topic format only . Do not create  additional format text in the Response. !!!]\"\n}\n    }\n\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "765c53f1-8c6f-4f99-9824-cc8ec2f2efd7",
+      "name": "Gemini_2_flash_exp_CDA2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2260,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyCIsx06N1DPeMh4wwkLFceNbgjUpkmywIc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \" \"\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $json.data[0].mime_type }}\",\n            \"file_uri\": \"{{ $json.data[0].uri }}\"\n          }\n        },\n        {\n          \"fileData\": {\n            \"mimeType\": \"{{$json.data[1].mime_type }}\",\n            \"fileUri\": \"{{ $json.data[1].uri }}\"\n            \n          }\n        }\n      ]\n    }\n  ],\n    \"generationConfig\": {\n        \"temperature\": 0.2,\n        \"topK\": 10,\n        \"topP\": 0.8,\n        \"maxOutputTokens\": 500,\n        \"responseMimeType\": \"text/plain\"\n    },\n    \"system_instruction\": {\n        \"parts\": {\"text\":\"Setting:\\n- Task type: License Plate Recognition\\n- Priority: Prioritize maximum accuracy for Thai character recognition over speed.\\n\\nCommand:\\n- First, Read all frames in the video and focus only on the closest car in the video.\\n- Second, focus on the License Plate of the focused car.\\n- Third, Improve the quality of the focused license plate before reading, such as adjusting contrast, reducing noise, or adjusting brightness, and apply any relevant image processing techniques for clearer text.\\n- Fourth, read the focused license plate carefully and use OCR techniques that can handle skewness, distortion, *and specifically Thai characters with overlapping or similar shapes, especially [ย, ฉ, ธ, บ, ษ]*. Apply character segmentation methods if necessary. **Pay very close attention to the nuances of Thai characters, particularly the loop and tail structures which distinguish ย from ฉ. Employ a secondary character verification algorithm focused on the subtle differences between these commonly confused glyphs.**\\n- Fifth, Optimize the inspection even in conditions of angles or uneven lighting *by attempting to rectify perspective and compensate for shadows and glare for a clearer view*. Prioritize accuracy over speed in inspection.\\n- *Sixth, Before providing final result, apply a cross validation method by re-analyzing the results with enhanced algorithm. If any doubt arise, please re-analyze the text again. **Include a dedicated analysis step specifically comparing characters that are likely to be confused (e.g., ย/ฉ, ธ/บ) using a comparative feature mapping algorithm to maximize accurate recognition.** *\\n- Finally: Respond according to the Output topic specification according to the Example output topic format only .\\n\\nRequirements:\\n- All frames in the video must be read and analyzed one by one.\\n- The angle and lighting of the image may not be symmetrical, the system should try to improve the reading and inspection through image processing.\\n- Analyze carefully if you encounter the following letters in particular [ย, ฉ, ธ], and double check if possible with character recognition engine for Thai. **Implement a probabilistic character scoring system that favors characters with the most similar features and highest confidence scores after applying all corrective measures.**\\n- Make sure to be as accurate as possible, **even if it means taking extra time on difficult plates. Focus the character recognition engine with a specialized model for Thai text which is capable of handling the nuanced shapes.**\\n- All information must be carefully verified and compiled for further evaluation by the vehicle owner or experts. *The goal is to provide a high-accuracy result for vehicle identification.*\\n\\nSupporting Information for Analysis:\\n\\n1. **ส่วนหัวของตัวอักษร:** ส่วนหัวของ \\\"ร\\\" เป็นเส้นโค้งเปิดด้านล่าง ซึ่งไม่มีลูปปิดเหมือนกับตัวอักษร \\\"ธ\\\" การตรวจสอบนี้เป็นขั้นตอนแรกที่สำคัญในการแยกแยะความแตกต่างระหว่าง \\\"ร\\\" และ \\\"ธ\\\"\\n\\n2. **เส้นแนวนอนที่ฐาน:** อักษร \\\"ร\\\" ไม่มีเส้นแนวนอนที่ฐาน ในขณะที่อักษร \\\"ธ\\\" จะมีเส้นแนวนอนที่ฐานอย่างชัดเจน การไม่มีเส้นแนวนอนที่ฐานนี้เป็นอีกหนึ่งปัจจัยสำคัญที่ทำให้มั่นใจว่าอักษรนี้คือ \\\"ร\\\"\\n\\n3. **ลักษณะเชิงโครงสร้าง:** ตัวอักษร \\\"ร\\\" มีลักษณะที่บางและเล็กกว่าเมื่อเทียบกับ \\\"ธ\\\" การเปรียบเทียบขนาดและความหนาของตัวอักษรนี้ช่วยในการยืนยันความถูกต้องของการระบุตัวอักษร\\n\\n4. **การใช้เทคนิค OCR เฉพาะสำหรับภาษาไทย:** โมเดล OCR ที่ใช้ได้รับการฝึกฝนมาสำหรับภาษาไทยโดยเฉพาะ ทำให้สามารถจดจำและแยกแยะลักษณะเฉพาะของ \\\"ร\\\" ได้อย่างแม่นยำมากขึ้น\\n\\n5. **การตรวจสอบซ้ำด้วยอัลกอริทึมพิเศษ:** หลังจากที่ OCR ทำการอ่านครั้งแรก ระบบได้ทำการตรวจสอบซ้ำโดยใช้อัลกอริทึม feature mapping เพื่อเปรียบเทียบคุณลักษณะของตัวอักษรที่อ่านได้กับต้นแบบของ \\\"ร\\\" และ \\\"ธ\\\" อีกครั้ง เพื่อให้มั่นใจว่าการระบุตัวอักษรนั้นถูกต้องและมีความแม่นยำสูงสุด\\n\\n\\nOutput:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : Show the problem\\n- if License plate is can read and confident output of License Plate Recognition is high : Show result in this format \\\"<result>\\\"[if result is have \\\" \\\" : replace  \\\" \\\" to \\\"\\\"] is in Thai language \\n\\nExample output:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : ไม่สามารถอ่านป้ายทะเบียนได้เนื่องจากอักษรและตัวเลขของป้ายทะเบียนนั้นหายไป\\n- if License plate is can read and confident output of License Plate Recognition is high : ผจ1234\\n\\n[!!! Respond according to the Output topic specification according to the Example output topic format only . Do not create  additional format text in the Response. !!!]\"\n}\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "b0336812-0cfc-41b8-b475-b8a376980167",
+      "name": "Gemini_2_flash_exp_LPR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyCIsx06N1DPeMh4wwkLFceNbgjUpkmywIc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \" \"\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $json.data[0].mime_type }}\",\n            \"file_uri\": \"{{ $json.data[0].uri }}\"\n          }\n        },\n        {\n          \"fileData\": {\n            \"mimeType\": \"{{$json.data[1].mime_type }}\",\n            \"fileUri\": \"{{ $json.data[1].uri }}\"\n            \n          }\n        }\n      ]\n    }\n  ],\n    \"generationConfig\": {\n        \"temperature\": 1,\n        \"topK\": 40,\n        \"topP\": 0.95,\n        \"maxOutputTokens\": 8192,\n        \"responseMimeType\": \"text/plain\"\n    },\n    \"system_instruction\": {\n        \"parts\": {\"text\":\"Setting:\\n- Task type: License Plate Recognition\\n- Priority: Prioritize maximum accuracy for Thai character recognition over speed.\\n\\nCommand:\\n- First, Read all frames in the video and focus only on the closest car in the video.\\n- Second, focus on the License Plate of the focused car.\\n- Third, Improve the quality of the focused license plate before reading, such as adjusting contrast, reducing noise, or adjusting brightness, and apply any relevant image processing techniques for clearer text.\\n- Fourth, read the focused license plate carefully and use OCR techniques that can handle skewness, distortion, *and specifically Thai characters with overlapping or similar shapes, especially [ย, ฉ, ธ, บ, ษ]*. Apply character segmentation methods if necessary. **Pay very close attention to the nuances of Thai characters, particularly the loop and tail structures which distinguish ย from ฉ. Employ a secondary character verification algorithm focused on the subtle differences between these commonly confused glyphs.**\\n- Fifth, Optimize the inspection even in conditions of angles or uneven lighting *by attempting to rectify perspective and compensate for shadows and glare for a clearer view*. Prioritize accuracy over speed in inspection.\\n- *Sixth, Before providing final result, apply a cross validation method by re-analyzing the results with enhanced algorithm. If any doubt arise, please re-analyze the text again. **Include a dedicated analysis step specifically comparing characters that are likely to be confused (e.g., ย/ฉ, ธ/บ) using a comparative feature mapping algorithm to maximize accurate recognition.** *\\n- Finally: Respond according to the Output topic specification according to the Example output topic format only .\\n\\nRequirements:\\n- All frames in the video must be read and analyzed one by one.\\n- The angle and lighting of the image may not be symmetrical, the system should try to improve the reading and inspection through image processing.\\n- Analyze carefully if you encounter the following letters in particular [ย, ฉ, ธ], and double check if possible with character recognition engine for Thai. **Implement a probabilistic character scoring system that favors characters with the most similar features and highest confidence scores after applying all corrective measures.**\\n- Make sure to be as accurate as possible, **even if it means taking extra time on difficult plates. Focus the character recognition engine with a specialized model for Thai text which is capable of handling the nuanced shapes.**\\n- All information must be carefully verified and compiled for further evaluation by the vehicle owner or experts. *The goal is to provide a high-accuracy result for vehicle identification.*\\n\\nSupporting Information for Analysis:\\n\\n1. **ส่วนหัวของตัวอักษร:** ส่วนหัวของ \\\"ร\\\" เป็นเส้นโค้งเปิดด้านล่าง ซึ่งไม่มีลูปปิดเหมือนกับตัวอักษร \\\"ธ\\\" การตรวจสอบนี้เป็นขั้นตอนแรกที่สำคัญในการแยกแยะความแตกต่างระหว่าง \\\"ร\\\" และ \\\"ธ\\\"\\n\\n2. **เส้นแนวนอนที่ฐาน:** อักษร \\\"ร\\\" ไม่มีเส้นแนวนอนที่ฐาน ในขณะที่อักษร \\\"ธ\\\" จะมีเส้นแนวนอนที่ฐานอย่างชัดเจน การไม่มีเส้นแนวนอนที่ฐานนี้เป็นอีกหนึ่งปัจจัยสำคัญที่ทำให้มั่นใจว่าอักษรนี้คือ \\\"ร\\\"\\n\\n3. **ลักษณะเชิงโครงสร้าง:** ตัวอักษร \\\"ร\\\" มีลักษณะที่บางและเล็กกว่าเมื่อเทียบกับ \\\"ธ\\\" การเปรียบเทียบขนาดและความหนาของตัวอักษรนี้ช่วยในการยืนยันความถูกต้องของการระบุตัวอักษร\\n\\n4. **การใช้เทคนิค OCR เฉพาะสำหรับภาษาไทย:** โมเดล OCR ที่ใช้ได้รับการฝึกฝนมาสำหรับภาษาไทยโดยเฉพาะ ทำให้สามารถจดจำและแยกแยะลักษณะเฉพาะของ \\\"ร\\\" ได้อย่างแม่นยำมากขึ้น\\n\\n5. **การตรวจสอบซ้ำด้วยอัลกอริทึมพิเศษ:** หลังจากที่ OCR ทำการอ่านครั้งแรก ระบบได้ทำการตรวจสอบซ้ำโดยใช้อัลกอริทึม feature mapping เพื่อเปรียบเทียบคุณลักษณะของตัวอักษรที่อ่านได้กับต้นแบบของ \\\"ร\\\" และ \\\"ธ\\\" อีกครั้ง เพื่อให้มั่นใจว่าการระบุตัวอักษรนั้นถูกต้องและมีความแม่นยำสูงสุด\\n\\n\\nOutput:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : Show the problem\\n- if License plate is can read and confident output of License Plate Recognition is high : Show result in this format \\\"<result>\\\"[if result is have \\\" \\\" : replace  \\\" \\\" to \\\"\\\"] is in Thai language \\n\\nExample output:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : ไม่สามารถอ่านป้ายทะเบียนได้เนื่องจากอักษรและตัวเลขของป้ายทะเบียนนั้นหายไป\\n- if License plate is can read and confident output of License Plate Recognition is high : ผจ1234\\n\\n[!!! Respond according to the Output topic specification according to the Example output topic format only . Do not create  additional format text in the Response. !!!]\"\n}\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "b15159cb-71a6-4b65-8707-96f607e13f4b",
+      "name": "Gemini_2_flash_exp_LPR9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyCIsx06N1DPeMh4wwkLFceNbgjUpkmywIc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \" \"\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $json.data[0].mime_type }}\",\n            \"file_uri\": \"{{ $json.data[0].uri }}\"\n          }\n        },\n        {\n          \"fileData\": {\n            \"mimeType\": \"{{$json.data[1].mime_type }}\",\n            \"fileUri\": \"{{ $json.data[1].uri }}\"\n            \n          }\n        }\n      ]\n    }\n  ],\n    \"generationConfig\": {\n        \"temperature\": 1,\n        \"topK\": 40,\n        \"topP\": 0.95,\n        \"maxOutputTokens\": 8192,\n        \"responseMimeType\": \"text/plain\"\n    },\n    \"system_instruction\": {\n        \"parts\": {\"text\":\"Setting:\\n- Task type: License Plate Recognition\\n- Priority: Prioritize maximum accuracy for Thai character recognition over speed.\\n\\nCommand:\\n- First, Read all frames in the video and focus only on the closest car in the video.\\n- Second, focus on the License Plate of the focused car.\\n- Third, Improve the quality of the focused license plate before reading, such as adjusting contrast, reducing noise, or adjusting brightness, and apply any relevant image processing techniques for clearer text.\\n- Fourth, read the focused license plate carefully and use OCR techniques that can handle skewness, distortion, *and specifically Thai characters with overlapping or similar shapes, especially [ย, ฉ, ธ, บ, ษ]*. Apply character segmentation methods if necessary. **Pay very close attention to the nuances of Thai characters, particularly the loop and tail structures which distinguish ย from ฉ. Employ a secondary character verification algorithm focused on the subtle differences between these commonly confused glyphs.**\\n- Fifth, Optimize the inspection even in conditions of angles or uneven lighting *by attempting to rectify perspective and compensate for shadows and glare for a clearer view*. Prioritize accuracy over speed in inspection.\\n- *Sixth, Before providing final result, apply a cross validation method by re-analyzing the results with enhanced algorithm. If any doubt arise, please re-analyze the text again. **Include a dedicated analysis step specifically comparing characters that are likely to be confused (e.g., ย/ฉ, ธ/บ) using a comparative feature mapping algorithm to maximize accurate recognition.** *\\n- Finally: Respond according to the Output topic specification according to the Example output topic format only .\\n\\nRequirements:\\n- All frames in the video must be read and analyzed one by one.\\n- The angle and lighting of the image may not be symmetrical, the system should try to improve the reading and inspection through image processing.\\n- Analyze carefully if you encounter the following letters in particular [ย, ฉ, ธ], and double check if possible with character recognition engine for Thai. **Implement a probabilistic character scoring system that favors characters with the most similar features and highest confidence scores after applying all corrective measures.**\\n- Make sure to be as accurate as possible, **even if it means taking extra time on difficult plates. Focus the character recognition engine with a specialized model for Thai text which is capable of handling the nuanced shapes.**\\n- All information must be carefully verified and compiled for further evaluation by the vehicle owner or experts. *The goal is to provide a high-accuracy result for vehicle identification.*\\n\\nSupporting Information for Analysis:\\n\\n1. **ส่วนหัวของตัวอักษร:** ส่วนหัวของ \\\"ร\\\" เป็นเส้นโค้งเปิดด้านล่าง ซึ่งไม่มีลูปปิดเหมือนกับตัวอักษร \\\"ธ\\\" การตรวจสอบนี้เป็นขั้นตอนแรกที่สำคัญในการแยกแยะความแตกต่างระหว่าง \\\"ร\\\" และ \\\"ธ\\\"\\n\\n2. **เส้นแนวนอนที่ฐาน:** อักษร \\\"ร\\\" ไม่มีเส้นแนวนอนที่ฐาน ในขณะที่อักษร \\\"ธ\\\" จะมีเส้นแนวนอนที่ฐานอย่างชัดเจน การไม่มีเส้นแนวนอนที่ฐานนี้เป็นอีกหนึ่งปัจจัยสำคัญที่ทำให้มั่นใจว่าอักษรนี้คือ \\\"ร\\\"\\n\\n3. **ลักษณะเชิงโครงสร้าง:** ตัวอักษร \\\"ร\\\" มีลักษณะที่บางและเล็กกว่าเมื่อเทียบกับ \\\"ธ\\\" การเปรียบเทียบขนาดและความหนาของตัวอักษรนี้ช่วยในการยืนยันความถูกต้องของการระบุตัวอักษร\\n\\n4. **การใช้เทคนิค OCR เฉพาะสำหรับภาษาไทย:** โมเดล OCR ที่ใช้ได้รับการฝึกฝนมาสำหรับภาษาไทยโดยเฉพาะ ทำให้สามารถจดจำและแยกแยะลักษณะเฉพาะของ \\\"ร\\\" ได้อย่างแม่นยำมากขึ้น\\n\\n5. **การตรวจสอบซ้ำด้วยอัลกอริทึมพิเศษ:** หลังจากที่ OCR ทำการอ่านครั้งแรก ระบบได้ทำการตรวจสอบซ้ำโดยใช้อัลกอริทึม feature mapping เพื่อเปรียบเทียบคุณลักษณะของตัวอักษรที่อ่านได้กับต้นแบบของ \\\"ร\\\" และ \\\"ธ\\\" อีกครั้ง เพื่อให้มั่นใจว่าการระบุตัวอักษรนั้นถูกต้องและมีความแม่นยำสูงสุด\\n\\n\\nOutput:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : Show the problem\\n- if License plate is can read and confident output of License Plate Recognition is high : Show result in this format \\\"<result>\\\"[if result is have \\\" \\\" : replace  \\\" \\\" to \\\"\\\"] is in Thai language \\n\\nExample output:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : ไม่สามารถอ่านป้ายทะเบียนได้เนื่องจากอักษรและตัวเลขของป้ายทะเบียนนั้นหายไป\\n- if License plate is can read and confident output of License Plate Recognition is high : ผจ1234\\n\\n[!!! Respond according to the Output topic specification according to the Example output topic format only . Do not create  additional format text in the Response. !!!]\"\n}\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "1016e3d4-8167-4ba6-b8f2-f2b98df84b3e",
+      "name": "Gemini_2_flash_exp_LPR1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyCIsx06N1DPeMh4wwkLFceNbgjUpkmywIc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \" \"\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $json.data[0].mime_type }}\",\n            \"file_uri\": \"{{ $json.data[0].uri }}\"\n          }\n        },\n        {\n          \"fileData\": {\n            \"mimeType\": \"{{$json.data[1].mime_type }}\",\n            \"fileUri\": \"{{ $json.data[1].uri }}\"\n            \n          }\n        }\n      ]\n    }\n  ],\n    \"generationConfig\": {\n        \"temperature\": 1,\n        \"topK\": 40,\n        \"topP\": 0.95,\n        \"maxOutputTokens\": 8192,\n        \"responseMimeType\": \"text/plain\"\n    },\n    \"system_instruction\": {\n        \"parts\": {\"text\":\"Setting:\\n- Task type: License Plate Recognition\\n- Priority: Prioritize maximum accuracy for Thai character recognition over speed.\\n\\nCommand:\\n- First, Read all frames in the video and focus only on the closest car in the video.\\n- Second, focus on the License Plate of the focused car.\\n- Third, Improve the quality of the focused license plate before reading, such as adjusting contrast, reducing noise, or adjusting brightness, and apply any relevant image processing techniques for clearer text.\\n- Fourth, read the focused license plate carefully and use OCR techniques that can handle skewness, distortion, *and specifically Thai characters with overlapping or similar shapes, especially [ย, ฉ, ธ, บ, ษ]*. Apply character segmentation methods if necessary. **Pay very close attention to the nuances of Thai characters, particularly the loop and tail structures which distinguish ย from ฉ. Employ a secondary character verification algorithm focused on the subtle differences between these commonly confused glyphs.**\\n- Fifth, Optimize the inspection even in conditions of angles or uneven lighting *by attempting to rectify perspective and compensate for shadows and glare for a clearer view*. Prioritize accuracy over speed in inspection.\\n- *Sixth, Before providing final result, apply a cross validation method by re-analyzing the results with enhanced algorithm. If any doubt arise, please re-analyze the text again. **Include a dedicated analysis step specifically comparing characters that are likely to be confused (e.g., ย/ฉ, ธ/บ) using a comparative feature mapping algorithm to maximize accurate recognition.** *\\n- Finally: Respond according to the Output topic specification according to the Example output topic format only .\\n\\nRequirements:\\n- All frames in the video must be read and analyzed one by one.\\n- The angle and lighting of the image may not be symmetrical, the system should try to improve the reading and inspection through image processing.\\n- Analyze carefully if you encounter the following letters in particular [ย, ฉ, ธ], and double check if possible with character recognition engine for Thai. **Implement a probabilistic character scoring system that favors characters with the most similar features and highest confidence scores after applying all corrective measures.**\\n- Make sure to be as accurate as possible, **even if it means taking extra time on difficult plates. Focus the character recognition engine with a specialized model for Thai text which is capable of handling the nuanced shapes.**\\n- All information must be carefully verified and compiled for further evaluation by the vehicle owner or experts. *The goal is to provide a high-accuracy result for vehicle identification.*\\n\\nSupporting Information for Analysis:\\n\\n1. **ส่วนหัวของตัวอักษร:** ส่วนหัวของ \\\"ร\\\" เป็นเส้นโค้งเปิดด้านล่าง ซึ่งไม่มีลูปปิดเหมือนกับตัวอักษร \\\"ธ\\\" การตรวจสอบนี้เป็นขั้นตอนแรกที่สำคัญในการแยกแยะความแตกต่างระหว่าง \\\"ร\\\" และ \\\"ธ\\\"\\n\\n2. **เส้นแนวนอนที่ฐาน:** อักษร \\\"ร\\\" ไม่มีเส้นแนวนอนที่ฐาน ในขณะที่อักษร \\\"ธ\\\" จะมีเส้นแนวนอนที่ฐานอย่างชัดเจน การไม่มีเส้นแนวนอนที่ฐานนี้เป็นอีกหนึ่งปัจจัยสำคัญที่ทำให้มั่นใจว่าอักษรนี้คือ \\\"ร\\\"\\n\\n3. **ลักษณะเชิงโครงสร้าง:** ตัวอักษร \\\"ร\\\" มีลักษณะที่บางและเล็กกว่าเมื่อเทียบกับ \\\"ธ\\\" การเปรียบเทียบขนาดและความหนาของตัวอักษรนี้ช่วยในการยืนยันความถูกต้องของการระบุตัวอักษร\\n\\n4. **การใช้เทคนิค OCR เฉพาะสำหรับภาษาไทย:** โมเดล OCR ที่ใช้ได้รับการฝึกฝนมาสำหรับภาษาไทยโดยเฉพาะ ทำให้สามารถจดจำและแยกแยะลักษณะเฉพาะของ \\\"ร\\\" ได้อย่างแม่นยำมากขึ้น\\n\\n5. **การตรวจสอบซ้ำด้วยอัลกอริทึมพิเศษ:** หลังจากที่ OCR ทำการอ่านครั้งแรก ระบบได้ทำการตรวจสอบซ้ำโดยใช้อัลกอริทึม feature mapping เพื่อเปรียบเทียบคุณลักษณะของตัวอักษรที่อ่านได้กับต้นแบบของ \\\"ร\\\" และ \\\"ธ\\\" อีกครั้ง เพื่อให้มั่นใจว่าการระบุตัวอักษรนั้นถูกต้องและมีความแม่นยำสูงสุด\\n\\n\\nOutput:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : Show the problem\\n- if License plate is can read and confident output of License Plate Recognition is high : Show result in this format \\\"<result>\\\"[if result is have \\\" \\\" : replace  \\\" \\\" to \\\"\\\"] is in Thai language \\n\\nExample output:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : ไม่สามารถอ่านป้ายทะเบียนได้เนื่องจากอักษรและตัวเลขของป้ายทะเบียนนั้นหายไป\\n- if License plate is can read and confident output of License Plate Recognition is high : ผจ1234\\n\\n[!!! Respond according to the Output topic specification according to the Example output topic format only . Do not create  additional format text in the Response. !!!]\"\n}\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "ee001b08-29b8-4877-9bdc-293b8f26ba12",
+      "name": "Gemini_2_flash_exp_LPR10",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "015c8c81-403f-4930-825c-050182bbf00b",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        460,
+        140
+      ],
+      "id": "458a2698-02dd-49c8-8688-14a67aa1ff57",
+      "name": "Webhook",
+      "webhookId": "015c8c81-403f-4930-825c-050182bbf00b"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyCIsx06N1DPeMh4wwkLFceNbgjUpkmywIc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \" \"\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $json.data[0].mime_type }}\",\n            \"file_uri\": \"{{ $json.data[0].uri }}\"\n          }\n        },\n        {\n          \"fileData\": {\n            \"mimeType\": \"{{ $json.data[1].mime_type }}\",\n            \"fileUri\": \"{{ $json.data[1].uri }}\"\n            \n          }\n        }\n      ]\n    }\n  ],\n    \"generationConfig\": {\n        \"temperature\": 0.2,\n        \"topK\": 10,\n        \"topP\": 0.8,\n        \"maxOutputTokens\": 500,\n        \"responseMimeType\": \"text/plain\"\n    },\n    \"system_instruction\": {\n        \"parts\": {\"text\":\"Setting:\\n- Task type: License Plate Recognition\\n- Priority: Prioritize maximum accuracy for Thai character recognition over speed.\\n\\nCommand:\\n- First, Read all frames in the video and focus only on the closest car in the video.\\n- Second, focus on the License Plate of the focused car.\\n- Third, Improve the quality of the focused license plate before reading, such as adjusting contrast, reducing noise, or adjusting brightness, and apply any relevant image processing techniques for clearer text.\\n- Fourth, read the focused license plate carefully and use OCR techniques that can handle skewness, distortion, *and specifically Thai characters with overlapping or similar shapes, especially [ย, ฉ, ธ, บ, ษ]*. Apply character segmentation methods if necessary. **Pay very close attention to the nuances of Thai characters, particularly the loop and tail structures which distinguish ย from ฉ. Employ a secondary character verification algorithm focused on the subtle differences between these commonly confused glyphs.**\\n- Fifth, Optimize the inspection even in conditions of angles or uneven lighting *by attempting to rectify perspective and compensate for shadows and glare for a clearer view*. Prioritize accuracy over speed in inspection.\\n- *Sixth, Before providing final result, apply a cross validation method by re-analyzing the results with enhanced algorithm. If any doubt arise, please re-analyze the text again. **Include a dedicated analysis step specifically comparing characters that are likely to be confused (e.g., ย/ฉ, ธ/บ) using a comparative feature mapping algorithm to maximize accurate recognition.** *\\n- Finally: Respond according to the Output topic specification according to the Example output topic format only .\\n\\nRequirements:\\n- All frames in the video must be read and analyzed one by one.\\n- The angle and lighting of the image may not be symmetrical, the system should try to improve the reading and inspection through image processing.\\n- Analyze carefully if you encounter the following letters in particular [ย, ฉ, ธ], and double check if possible with character recognition engine for Thai. **Implement a probabilistic character scoring system that favors characters with the most similar features and highest confidence scores after applying all corrective measures.**\\n- Make sure to be as accurate as possible, **even if it means taking extra time on difficult plates. Focus the character recognition engine with a specialized model for Thai text which is capable of handling the nuanced shapes.**\\n- All information must be carefully verified and compiled for further evaluation by the vehicle owner or experts. *The goal is to provide a high-accuracy result for vehicle identification.*\\n\\nSupporting Information for Analysis:\\n\\n1. **ส่วนหัวของตัวอักษร:** ส่วนหัวของ \\\"ร\\\" เป็นเส้นโค้งเปิดด้านล่าง ซึ่งไม่มีลูปปิดเหมือนกับตัวอักษร \\\"ธ\\\" การตรวจสอบนี้เป็นขั้นตอนแรกที่สำคัญในการแยกแยะความแตกต่างระหว่าง \\\"ร\\\" และ \\\"ธ\\\"\\n\\n2. **เส้นแนวนอนที่ฐาน:** อักษร \\\"ร\\\" ไม่มีเส้นแนวนอนที่ฐาน ในขณะที่อักษร \\\"ธ\\\" จะมีเส้นแนวนอนที่ฐานอย่างชัดเจน การไม่มีเส้นแนวนอนที่ฐานนี้เป็นอีกหนึ่งปัจจัยสำคัญที่ทำให้มั่นใจว่าอักษรนี้คือ \\\"ร\\\"\\n\\n3. **ลักษณะเชิงโครงสร้าง:** ตัวอักษร \\\"ร\\\" มีลักษณะที่บางและเล็กกว่าเมื่อเทียบกับ \\\"ธ\\\" การเปรียบเทียบขนาดและความหนาของตัวอักษรนี้ช่วยในการยืนยันความถูกต้องของการระบุตัวอักษร\\n\\n4. **การใช้เทคนิค OCR เฉพาะสำหรับภาษาไทย:** โมเดล OCR ที่ใช้ได้รับการฝึกฝนมาสำหรับภาษาไทยโดยเฉพาะ ทำให้สามารถจดจำและแยกแยะลักษณะเฉพาะของ \\\"ร\\\" ได้อย่างแม่นยำมากขึ้น\\n\\n5. **การตรวจสอบซ้ำด้วยอัลกอริทึมพิเศษ:** หลังจากที่ OCR ทำการอ่านครั้งแรก ระบบได้ทำการตรวจสอบซ้ำโดยใช้อัลกอริทึม feature mapping เพื่อเปรียบเทียบคุณลักษณะของตัวอักษรที่อ่านได้กับต้นแบบของ \\\"ร\\\" และ \\\"ธ\\\" อีกครั้ง เพื่อให้มั่นใจว่าการระบุตัวอักษรนั้นถูกต้องและมีความแม่นยำสูงสุด\\n\\n\\nOutput:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : Show the problem\\n- if License plate is can read and confident output of License Plate Recognition is high : Show result in this format \\\"<result>\\\"[if result is have \\\" \\\" : replace  \\\" \\\" to \\\"\\\"] is in Thai language \\n\\nExample output:\\n- if License plate is can not read or confident output of License Plate Recognition is low  : ไม่สามารถอ่านป้ายทะเบียนได้เนื่องจากอักษรและตัวเลขของป้ายทะเบียนนั้นหายไป\\n- if License plate is can read and confident output of License Plate Recognition is high : ผจ1234\\n\\n[!!! Respond according to the Output topic specification according to the Example output topic format only . Do not create  additional format text in the Response. !!!]\"\n}\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "283cae82-faa5-45ce-80a2-4177f87417ca",
+      "name": "Gemini_2_flash_exp_LPR2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        -500
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        700,
+        140
+      ],
+      "id": "041a5ce0-94d0-46f6-b801-4d3c090acb25",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        920,
+        140
+      ],
+      "id": "bb090495-a0e9-45b1-be6b-01cfe9ae366b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyCIsx06N1DPeMh4wwkLFceNbgjUpkmywIc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \" \"\n        },\n        {\n          \"file_data\": {\n            \"mime_type\": \"{{ $json.mime_type }}\",\n            \"file_uri\": \"{{ $json.uri }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n      \"temperature\": 0.5,\n      \"topK\": 20,\n      \"topP\": 0.9,\n      \"maxOutputTokens\": 1000,\n      \"responseMimeType\": \"text/plain\"\n  },\n    \"system_instruction\": {\n        \"parts\": {\"text\":\"Setting:\\n- Task type: Car Damage Assessment\\n\\nCommand:\\n- First, Read all frame in the video and focus only on the closest car video.\\n- Second, focus each automotive parts of focused car.\\n- Third, carefully inspect and assess  each  focused automotive  part for any clearly visible [scratches], [dents], [cracks], [fractures on the plastic or glass around the front or tail light], [other types of damage] or [Everything is wrong when compared to a new car].\\n- Fourth,Optimize the inspection even in conditions of angles or uneven lighting for the most accurate inspection.\\n- Finally:Respond according to the Output topic specification according to the Example output topic format only .\\n\\n\\nRequirements:\\n- All frames in the video must be read and analyzed one by one.\\n- The angle and lighting of the image may not be symmetrical, the system tries to improve the reading and inspection.\\n- Make sure to be as accurate as possible.\\n- All information must be carefully verified and compiled for further evaluation by the vehicle owner or experts.\\n\\n\\n\\nOutput:\\n- If the imported video is not have vehicle in any frame: Confirm that the inspection is complete and Describe the video you see and what it is.\\n- If the mostly frame in imported video is show a car interior : Confirm that the inspection is complete, not automotive  part.\\n- If no damage is found: Confirm that the inspection is complete, no damage.\\n- If damage is found: Response in this format \\\"<type of damage  point you can see> in <automotive parts you see that point >\\\" in Thai language. is in order 1,2,3,... \\n\\nExample output:\\n- If input video is not vehicle: ภาพที่แสดงเป็นป้ายภาษีประจำปีที่ติดอยู่ภายในรถยนต์\\n\\n- If the mostly frame in imported video is show a car interior : ส่วนใหญ่แสดงเป็นภายในของรถยนต์\\n\\n- If no damage is found: การตรวจสอบ ไม่พบความเสียหาย\\n\\n- If damage is found: \\n  1.รอยบุบ บริเวณ กันชนหน้า \\n  2.รอยขีดข่วน บริเวณ กันชนหน้า (ส่วนล่างของรถ) ใกล้กับรอยบุบ\\n  3.ไฟท้ายแตกร้าว \\n  4.ไฟท้ายมีชิ้นส่วนขาดหาย \\n  5.รอยสนิม บริเวณ กันชนหน้า (ส่วนบนของรถ)\\n  6.รอยสีลอก บริเวณ กันชนหลัง (ส่วนบนของรถ)\\n\\n[!!! Respond according to the Output topic specification according to the Example output topic format only . Do not create  additional format text in the Response. !!!]\"\n}\n    }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "id": "d4d6b6d0-65ea-40ce-8f6a-56c47593ccfa",
+      "name": "Gemini_2_flash_exp_CDA4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        740,
+        540
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"{{ $json.data[0].display_name.split(\".\")[0] }}\": \"{{ $json.data[0].myNewField.candidates[0].content.parts[0].text.trim() }}\",\n  \"{{ $json.data[1].display_name.split(\".\")[0] }}\": \"{{ $json.data[1].myNewField.candidates[0].content.parts[0].text.trim() }}\",\n  \"{{ $json.data[2].display_name.split(\".\")[0] }}\": \"{{ $json.data[2].myNewField.candidates[0].content.parts[0].text.trim() }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1560,
+        520
+      ],
+      "id": "a1d2eaa1-105d-4e00-ac41-226ad0d6ad57",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "035e9e09-799e-4578-85ff-7b073fef7095",
+      "name": "Aggregate3",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1380,
+        520
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        960,
+        520
+      ],
+      "id": "a00ee62e-8fad-4e4e-8363-263249f2aa01",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor idx,item in enumerate(_input.all()[0:3]):\n  item.json.myNewField = _input.all()[3+idx].json\nreturn _input.all()[0:3]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        520
+      ],
+      "id": "521f8ffe-1615-467a-be1b-e717c9765e3d",
+      "name": "Code4"
+    }
+  ],
+  "connections": {
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Gemini_2_flash_exp_CDA2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini_2_flash_exp_CDA2": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini_2_flash_exp_LPR": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Gemini_2_flash_exp_LPR9": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Gemini_2_flash_exp_LPR1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Gemini_2_flash_exp_LPR10": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini_2_flash_exp_LPR2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Gemini_2_flash_exp_CDA4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Gemini_2_flash_exp_LPR2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gemini_2_flash_exp_LPR",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gemini_2_flash_exp_LPR9",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gemini_2_flash_exp_LPR1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gemini_2_flash_exp_LPR10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini_2_flash_exp_CDA4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}'></n8n-demo>
 </body>
 </html>
