@@ -3,118 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>n8n Workflow Visualizer</title>
+    <title>n8n Demo Workflow</title>
+    <!-- โหลด n8n-demo Web Component จาก CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
     <script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-dark: #121212;
-            --bg-surface: #1a1a1a;
-            --bg-elevated: #242424;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --border: #333333;
-            --accent: #666666;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-primary);
-            line-height: 1.5;
-        }
-
-        .workspace {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 0; /* เอามุมโค้งออกเพื่อให้เต็มหน้าจอ */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            width: 100vw; /* ขยายเต็มจอในแนวนอน */
-            height: auto; /* กำหนดความสูงตามเนื้อหา */
-            padding: 20px;
-        }
-
-        .workspace-header {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-elevated);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            width: 100%; /* ขยาย header ให้เต็มความกว้าง */
-        }
-
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            background: #4CAF50;
-            border-radius: 50%;
-        }
-
-        .workspace-title {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .workflow-area {
-            flex: 1;
-            width: 100%; /* ขยาย workflow ให้เต็มความกว้าง */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: auto; /* เพิ่ม scroll หากเนื้อหาใหญ่กว่า width */
-            height: auto; /* กำหนดความสูงตามเนื้อหา */
-        }
-
-        n8n-demo {
-            width: 100%; /* ขยาย flow ให้เต็ม */
-            height: auto; /* กำหนดความสูงอัตโนมัติ */
-            display: block;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-surface);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #777777;
-        }
-    </style>
 </head>
 <body>
-    <main>
-        <div class="workspace">
-
-            <div class="workflow-area">
-                <n8n-demo></n8n-demo>
-            </div>
-        </div>
-    </main>
+    <n8n-demo></n8n-demo>
 
     <script>
         const workflowData = {
@@ -824,7 +720,9 @@
       }
     ]
   }
-}
+};
+
+        // ตั้งค่าข้อมูลใน n8n-demo
         const n8nDemo = document.querySelector("n8n-demo");
         n8nDemo.workflow = JSON.stringify(workflowData);
     </script>
