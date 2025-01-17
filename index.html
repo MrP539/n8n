@@ -3,15 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>n8n Demo Workflow</title>
-    <!-- โหลด n8n-demo Web Component จาก CDN -->
+    <title>n8n Workflow Visualizer</title>
     <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
     <script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        :root {
+            --bg-dark: #121212;
+            --bg-surface: #1a1a1a;
+            --bg-elevated: #242424;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --border: #333333;
+            --accent: #666666;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .workspace {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 0; /* เอามุมโค้งออกเพื่อให้เต็มหน้าจอ */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100vw; /* ขยายเต็มจอในแนวนอน */
+            height: auto; /* กำหนดความสูงตามเนื้อหา */
+            padding: 20px;
+        }
+
+        .workspace-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-elevated);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%; /* ขยาย header ให้เต็มความกว้าง */
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+        }
+
+        .workspace-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .workflow-area {
+            flex: 1;
+            width: 100%; /* ขยาย workflow ให้เต็มความกว้าง */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto; /* เพิ่ม scroll หากเนื้อหาใหญ่กว่า width */
+            height: auto; /* กำหนดความสูงตามเนื้อหา */
+        }
+
+        n8n-demo {
+            width: 100%; /* ขยาย flow ให้เต็ม */
+            height: auto; /* กำหนดความสูงอัตโนมัติ */
+            display: block;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-surface);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777777;
+        }
+    </style>
 </head>
 <body>
-    <n8n-demo workflow='{
+    <main>
+        <div class="workspace">
+            <div class="workspace-header">
+                <div class="status-indicator"></div>
+                <span class="workspace-title">Active Workflow</span>
+            </div>
+            <div class="workflow-area">
+                <n8n-demo></n8n-demo>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const workflowData = {
   "nodes": [
     {
       "parameters": {
@@ -640,7 +749,87 @@
       ]
     }
   },
-  "pinData": {}
-}'></n8n-demo>
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "host": "n8n.agilesoftgroup.com",
+          "user-agent": "python-requests/2.32.3",
+          "content-length": "1562",
+          "accept": "*/*",
+          "accept-encoding": "gzip, br",
+          "cdn-loop": "cloudflare; loops=1",
+          "cf-connecting-ip": "247.247.160.228",
+          "cf-connecting-ipv6": "2403:6200:8813:e06e:9e13:eab3:16d8:2da7",
+          "cf-ipcountry": "TH",
+          "cf-pseudo-ipv4": "247.247.160.228",
+          "cf-ray": "903773c8bd33fceb-SIN",
+          "cf-visitor": "{\"scheme\":\"https\"}",
+          "cf-warp-tag-id": "0acecf9e-a8e4-4d13-a197-e830684f0f5f",
+          "connection": "keep-alive",
+          "content-type": "application/json",
+          "x-forwarded-for": "247.247.160.228",
+          "x-forwarded-proto": "https"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "data": [
+            {
+              "name": "files/pcbj9h0kcue9",
+              "display_name": "output_front_ID2.mp4",
+              "mime_type": "video/mp4",
+              "size_bytes": "32911684",
+              "create_time": "2025-01-17T15:41:09.121821Z",
+              "update_time": "2025-01-17T15:41:13.633322Z",
+              "expiration_time": "2025-01-19T15:41:09.118537913Z",
+              "sha256_hash": "NmEwOTM3MWY5ZmE5NDJmYTliOWFkMDZiNjA4ODE4ZDE3OTY4ZDg1YzRhYjZjYmEwYWMyZDQ1YzU4NDBiNDU3ZA==",
+              "uri": "https://generativelanguage.googleapis.com/v1beta/files/pcbj9h0kcue9",
+              "state": "ACTIVE",
+              "video_metadata": {
+                "video_duration": "22s"
+              }
+            },
+            {
+              "name": "files/qbwbj3o425op",
+              "display_name": "output_back_ID2.mp4",
+              "mime_type": "video/mp4",
+              "size_bytes": "33300294",
+              "create_time": "2025-01-17T15:41:30.305387Z",
+              "update_time": "2025-01-17T15:41:35.745224Z",
+              "expiration_time": "2025-01-19T15:41:30.288590741Z",
+              "sha256_hash": "NGQ3MmEwNTU1M2EzNzJiMTQ3MWZiYzkzYTViYmZiMjcwM2IxNWIxNzkwNWFiZTRlNmRkYTUxMTcxMGYxYTIyMA==",
+              "uri": "https://generativelanguage.googleapis.com/v1beta/files/qbwbj3o425op",
+              "state": "ACTIVE",
+              "video_metadata": {
+                "video_duration": "22s"
+              }
+            },
+            {
+              "name": "files/8swujwz11eet",
+              "display_name": "output_side_ID2.mp4",
+              "mime_type": "video/mp4",
+              "size_bytes": "32914739",
+              "create_time": "2025-01-17T15:41:50.252642Z",
+              "update_time": "2025-01-17T15:41:55.405213Z",
+              "expiration_time": "2025-01-19T15:41:50.226630203Z",
+              "sha256_hash": "MzRlZDRjMWQ4YmVlOTExNTRmZWQxZDJlODc2ODgwNDI4NTAzZTVjYmYyNDRiZWIxNWE2MTYwYmQyZDgyMmMyNQ==",
+              "uri": "https://generativelanguage.googleapis.com/v1beta/files/8swujwz11eet",
+              "state": "ACTIVE",
+              "video_metadata": {
+                "video_duration": "22s"
+              }
+            }
+          ]
+        },
+        "webhookUrl": "https://n8n.agilesoftgroup.com/webhook-test/015c8c81-403f-4930-825c-050182bbf00b",
+        "executionMode": "test"
+      }
+    ]
+  }
+}
+        const n8nDemo = document.querySelector("n8n-demo");
+        n8nDemo.workflow = JSON.stringify(workflowData);
+    </script>
 </body>
 </html>
