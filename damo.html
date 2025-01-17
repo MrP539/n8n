@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n8n Demo Workflow</title>
+    <!-- โหลด n8n-demo Web Component จาก CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.0.0/webcomponents-loader.js"></script>
+    <script src="https://www.unpkg.com/lit@2.0.0-rc.2/polyfill-support.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+</head>
+<body>
+    <n8n-demo workflow='{
+        "nodes": [
+            {
+                "name": "Start",
+                "type": "n8n-nodes-base.start",
+                "position": [300, 200]
+            },
+            {
+                "name": "Webhook",
+                "type": "n8n-nodes-base.webhook",
+                "position": [500, 200],
+                "parameters": {
+                    "path": "webhook",
+                    "httpMethod": "POST"
+                },
+                "typeVersion": 1
+            }
+        ],
+        "connections": {
+            "Start": {
+                "main": [
+                    [
+                        {
+                            "node": "Webhook",
+                            "type": "main",
+                            "index": 0
+                        }
+                    ]
+                ]
+            }
+        }
+    }'></n8n-demo>
+</body>
+</html>
