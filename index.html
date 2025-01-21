@@ -39,7 +39,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -2080,
+        -2100,
         4740
       ],
       "id": "01e7fa42-baec-46cc-a2cc-f815bb54e50e",
@@ -452,11 +452,12 @@
       "parameters": {
         "content": "### ส่งไปยัง flow ที่ทำหน้าที่เทียบข้อมูลป้ายทะเบียนของรถยนต์ที่อ่านได้ และ แจ้งเตือน\n**หากป้ายทะเบียนของรถยนต์ที่อ่านได้ ตรงกับข้อมูลของลูกค้าที่มีการนัดหมายเข้าใช้บริการในวันนั้น จะทำการแจ้งเตือนทีมที่เกี่ยวข้องว่าลูกค้าได้มาถึงศูนย์บริการแล้ว",
         "height": 440,
-        "width": 380
+        "width": 380,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -2220,
+        -2240,
         4560
       ],
       "typeVersion": 1,
@@ -561,6 +562,491 @@
       "typeVersion": 1,
       "id": "187266a9-acfa-4967-a8b2-084d0e743500",
       "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "### ส่งไปยัง flow ที่ทำหน้าที่เทียบข้อมูลป้ายทะเบียนของรถยนต์ที่อ่านได้ และ แจ้งเตือน\n**หากป้ายทะเบียนของรถยนต์ที่อ่านได้ ตรงกับข้อมูลของลูกค้าที่มีการนัดหมายเข้าใช้บริการในวันนั้น จะทำการแจ้งเตือนทีมที่เกี่ยวข้องว่าลูกค้าได้มาถึงศูนย์บริการแล้ว",
+        "height": 1160,
+        "width": 2840,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2240,
+        5020
+      ],
+      "typeVersion": 1,
+      "id": "2c3eaa55-d4c2-4359-a029-0c44046b3077",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AbM5z2T6OLz0_TnGOYBF2CFfUiF9MsMV7-OnurIQzjA",
+          "mode": "list",
+          "cachedResultName": "BCT_สถานะเข้าใช้บริการศูนย์บริการ(สำนักงานใหญ่)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbM5z2T6OLz0_TnGOYBF2CFfUiF9MsMV7-OnurIQzjA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 573559442,
+          "mode": "list",
+          "cachedResultName": "สถานะรับรถ(สำหรับSA)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AbM5z2T6OLz0_TnGOYBF2CFfUiF9MsMV7-OnurIQzjA/edit#gid=573559442"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange",
+              "headerRow": 10,
+              "firstDataRow": 16
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1380,
+        5200
+      ],
+      "id": "d3ebc714-dbe5-47e9-bfd3-c8558c05cffa",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N72Q31CFvmlLxkts",
+          "name": "siwat.mungklang.pkg@gmail.com_testn8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e4b4defd-69dd-484e-8fde-ca1c08acd7c6",
+              "leftValue": "={{ $json[\"ประเภท นัดหมาย/Walkin\"] }}",
+              "rightValue": "=ลูกค้านัดหมาย",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1220,
+        5200
+      ],
+      "id": "3285ba88-637f-451b-8d11-99fbfb68c940",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "chatId": "6410375231",
+        "text": "=🎉 **คุณ {{ $json[\"ชื่อ นามสกุล ลูกค้า\"] }} ได้มาถึงศูนย์บริการแล้ว!** 🎉  \n\n✅ **การวิเคราะห์ข้อมูลสมบูรณ์**\n\n🚗 **ลูกค้านัดหมาย**  \n📋 **ป้ายทะเบียน:**  {{ $json[\"ทะเบียนรถที่นัดหมาย\"] }}\n🕒 **เวลานัดหมาย:** {{ $json[\"เวลานัดหมาย\"] }}\n\n\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7150515c-0690-466c-9911-5082acb575a5",
+      "name": "Telegram2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -940,
+        5200
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "bXt0H1dIVfMuNqQn",
+          "name": "n8nGANASIDEN8N_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2100,
+        5440
+      ],
+      "id": "ae539473-d11b-44e7-9bab-6bcbf1fe0c45",
+      "name": "Workflow Input Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d9296b8d-d402-495d-99e3-92ba3f398200",
+              "leftValue": "={{ $json[\"ทะเบียนรถที่นัดหมาย\"].split(\" \")[0].match(/\\d+$/)[0] }}",
+              "rightValue": "={{ $json.b_part }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "abfbd3d6-217d-4b4a-b722-43dfad87b8bb",
+              "leftValue": "={{ $json.f_part }}{{ $json.b_part }}",
+              "rightValue": "={{ $json[\"ทะเบียนรถที่นัดหมาย\"].split(\" \")[0]}}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -920,
+        5440
+      ],
+      "id": "56588e2f-596b-4af5-80dd-7289266dd85c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d9296b8d-d402-495d-99e3-92ba3f398200",
+              "leftValue": "={{ $json[\"ทะเบียนรถที่นัดหมาย\"].split(\" \")[0] }}",
+              "rightValue": "={{ $json.f_part }}{{ $json.b_part }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "4cfbd6d6-2355-4614-b7ff-90946674fcf9",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1200,
+        5420
+      ],
+      "id": "af71cdac-025e-40cb-9f55-ad29bb65bd69",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d9296b8d-d402-495d-99e3-92ba3f398200",
+              "leftValue": "={{ $('If').all().length }}",
+              "rightValue": "=1",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -660,
+        5420
+      ],
+      "id": "d2af472f-42a5-4a26-9f87-d0d47836fe63",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "chatId": "6410375231",
+        "text": "=🎉 **ลูกค้าได้มาถึงศูนย์บริการแล้ว!** 🎉 \n\n⚠️ **ข้อผิดพลาดในการวิเคราะห์ข้อมูล**  \nระบบไม่สามารถวิเคราะห์ป้ายทะเบียนได้ตรงกับฐานข้อมูลการจองเข้าใช้บริการ  \n\nแต่หากวิเคราะห์โดยใช้เพียงตัวเลข 4 ตัวท้ายของป้ายทะเบียน จะมีข้อมูลลูกค้านัดหมายใช้บริการที่ใกล้เคียงดังนี้:\n\n{{ $json.test }}\n\n❗ โปรดตรวจสอบข้อมูลเพิ่มเติม\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "3ae49a77-daac-4268-b877-1ca71defcc89",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        5940
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "bXt0H1dIVfMuNqQn",
+          "name": "n8nGANASIDEN8N_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "134e6426-92c7-4384-83cb-32e9a50f55e5",
+              "name": "text",
+              "value": "=🚗 **{{ $json[\"ประเภท นัดหมาย/Walkin\"] }}**   \n📋 **ป้ายทะเบียน:** {{ $json['ทะเบียนรถที่นัดหมาย'] }} \n🕒 **เวลานัดหมาย:** {{ $json['เวลานัดหมาย'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -900,
+        5940
+      ],
+      "id": "51379462-87b3-4a29-ade0-c9831608a999",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Loop over input items and add a new field called 'myNewField' to the JSON of each one\noutput = '\\n\\n'.join(item[\"text\"]  for item in _input.all()[0].json[\"data\"])\nreturn {\"test\": output}"
+      },
+      "id": "dbae45fd-f0bd-42b2-a7e2-ef27ca706001",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -580,
+        5940
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "6410375231",
+        "text": "=🎉 **ลูกค้าได้มาถึงศูนย์บริการแล้ว!** 🎉  \n\n⚠️ **ข้อผิดพลาดในการวิเคราะห์ข้อมูล**  \nระบบไม่สามารถวิเคราะห์ป้ายทะเบียนได้ตรงกับฐานข้อมูลการจองเข้าใช้บริการ  \n\nแต่หากวิเคราะห์โดยใช้เพียงตัวเลข 4 ตัวท้ายของป้ายทะเบียน จะมีข้อมูลลูกค้านัดหมายใช้บริการที่ใกล้เคียงดังนี้:\n\n🚗 **ลูกค้านัดหมาย**  \n📋 **ป้ายทะเบียน:**  {{ $json[\"ทะเบียนรถที่นัดหมาย\"] }}\n🕒 **เวลานัดหมาย:** {{ $json[\"เวลานัดหมาย\"] }}\n\n❗ โปรดตรวจสอบข้อมูลเพิ่มเติม\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "1fb16fdb-d09b-4918-8ada-4fb5c1a22c37",
+      "name": "Telegram1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        5400
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "bXt0H1dIVfMuNqQn",
+          "name": "n8nGANASIDEN8N_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "6410375231",
+        "text": "=⚠️ระบบไม่สามารถวิเคราะห์ป้ายทะเบียน {{ $('Workflow Input Trigger').all().first().json.candidates[0].content.parts[0].text }} ได้ตรงกับฐานข้อมูลการจองเข้าใช้บริการวันนี้ \n\n❗ โปรดตรวจสอบข้อมูลเพิ่มเติม\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "3c1b16fd-6c7f-435f-8b85-3b45e3f97d79",
+      "name": "Telegram3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        140,
+        5680
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "bXt0H1dIVfMuNqQn",
+          "name": "n8nGANASIDEN8N_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data[0].result.message_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "notExists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -40,
+        5680
+      ],
+      "id": "1d078df0-547e-4041-9f55-1076f8e8804a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {
+          "fuzzyCompare": false
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -1380,
+        5420
+      ],
+      "id": "069001c4-0a8b-455a-978a-8d0a58158e7d",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Loop over input items and add a new field called 'myNewField' to the JSON of each one\nimport re\n\n\ndef split_text(replace_data):\n  if not replace_data[0].isdigit():\n    Re_format_data = re.sub(r\"([ก-ฮ])(\\d+)\",r\"\\1-\\2\",replace_data).split(\"-\")\n  else :\n    Re_format_data = re.sub(r\"(\\d)([ก-ฮ]+)(\\d+)\",r\"\\1\\2-\\3\",replace_data).split(\"-\")\n  return Re_format_data\n\ndata = _input.all()[0].json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"].strip()\n\n\nreturn {[\"f_part\",\"b_part\"][idx] : elem for idx,elem in enumerate(split_text(data))}\n\n"
+      },
+      "id": "584f916b-dd57-464e-b12f-460a4dd3c320",
+      "name": "Code5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1700,
+        5440
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        5680
+      ],
+      "id": "d4a0c8a7-a676-41b9-94c3-1f2e64b91b4c",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -740,
+        5940
+      ],
+      "id": "88306295-6e3b-419f-917d-846159424548",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "return {\"ok\":\"true\"}\n\n"
+      },
+      "id": "5c219aab-c5be-47c0-b7f1-60d39a55986f",
+      "name": "Code3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -860,
+        5700
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        5680
+      ],
+      "id": "239751e2-1d32-4408-8e64-5cd2f1c51f86",
+      "name": "Aggregate1"
     }
   ],
   "connections": {
@@ -796,6 +1282,208 @@
         [
           {
             "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Telegram2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Telegram3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
             "type": "main",
             "index": 0
           }
